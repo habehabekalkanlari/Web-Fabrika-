@@ -1,0 +1,7 @@
+pandas
+chromadb
+playwright
+openai
+python-dotenv
+pyyaml
+pillow

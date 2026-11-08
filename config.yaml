@@ -1,0 +1,8 @@
+habehabe:
+  base_url: "http://localhost:11434"
+  default_model: "qwen2.5-coder:1.5b"
+  code_model: "qwen2.5-coder:1.5b"
+  embed_model: "nomic-embed-text:latest"
+  timeout_s: 180
+brand:
+  name: "Habehabe-ai"
