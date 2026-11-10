@@ -29,6 +29,12 @@ const PROVIDERS = [
   { id: "anthropic", ad: "Anthropic - Claude Sonnet 4", acik: "Ucretli - En kaliteli yazan", acik_en: "Paid - Best writer", model: "claude-sonnet-4-20250514", keyUrl: "https://console.anthropic.com/settings/keys" },
   { id: "mistral", ad: "Mistral - Large", acik: "Avrupa - Hizli", acik_en: "Europe - Fast", model: "mistral-large-latest", keyUrl: "https://console.mistral.ai/api-keys" },
 ];
+const AJANLAR = [
+  { id: "meta", ad: "Meta", rol: "kod yazar" },
+  { id: "laya", ad: "Laya", rol: "kontrol eder" },
+  { id: "panda", ad: "Panda", rol: "plan yapar" },
+  { id: "hafiza", ad: "Hafıza", rol: "hatırlar" },
+];
 export default function App() {
   const [mesajlar, setMesajlar] = useState([]);
   const [girdi, setGirdi] = useState("");
@@ -53,6 +59,9 @@ export default function App() {
   const durRef = useRef(false);
   const [aktifProvider, setAktifProvider] = useState(localStorage.getItem("habe_provider") || "groq");
   const [indirme, setIndirme] = useState("mac");
+  const [aktifAjan, setAktifAjan] = useState("meta");
+  const [layaKarar] = useState("bekliyor");
+  const [kullaniciOnay, setKullaniciOnay] = useState(false);
   const tr = dil === "tr";
   const T = { sor: tr ? "> Bir sey sor..." : "> Ask something...", gonder: tr ? "GONDER" : "SEND", dusun: tr ? "Dusunuyor" : "Thinking", bos: tr ? "> Bir sey sor..." : "> Ask something...", ayar: tr ? "Ayarlar" : "Settings", github: tr ? "github Baglantisi" : "github Connection", githubAcik: tr ? "github'a baglan, projelerini senkronize et" : "Connect github, sync your projects", bagli: tr ? "Bagli" : "Connected", bagla: tr ? "Bagla" : "Connect", provider: tr ? "Providerlar - Gercek Baglanti" : "Providers - Real Connection", providerAcik: tr ? "Provider sec, key gir. Key yoksa otomatik yerel Qwen'e doner." : "Pick provider, enter key. No key = fallback to local Qwen.", dilBas: tr ? "Dil / Language" : "Dil / Language", temaBas: tr ? "Tema" : "Theme", koyu: tr ? "Dark" : "Dark", acikTema: tr ? "Light" : "Light", indir: tr ? "Habehabe AI Indir" : "Download Habehabe AI", indirAcik: tr ? "Cihazini sec, QR ile indir" : "Pick your device, download with QR", profilBas: tr ? "Profil" : "Profile", google: tr ? "Google ile Giris Yap" : "Sign in with Google", cikis: tr ? "Cikis Yap" : "Log Out", hos: tr ? "Hos geldin" : "Welcome" };
   useEffect(() => { localStorage.setItem("habe_dil", dil); localStorage.setItem("habe_tema", tema); localStorage.setItem("habe_github", github ? "1" : "0"); localStorage.setItem("habe_profil", profil); localStorage.setItem("habe_keys", JSON.stringify(keys)); localStorage.setItem("habe_provider", aktifProvider); }, [dil, tema, github, profil, keys, aktifProvider]);
@@ -231,15 +240,45 @@ export default function App() {
     setYukleniyor(false); gonderKilit.current = false; if (eskiProvider === "ollama" && keys["groq"]) { setAktifProvider("ollama"); }
   }
   const koyu = tema === "dark";
-  const bg = koyu ? "#0d1410" : "#f5f5f0";
   const kart = koyu ? "#0f1814" : "#ffffff";
   const yazi = koyu ? "#c5d1cf" : "#1a2420";
   const sinir = koyu ? "#2d3d35" : "#d9d9d0";
   const dim = koyu ? "#6b7975" : "#888888";
   const INDIRMELER = [{ id: "mac", ad: "Mac", link: "https://habehabe.ai/download/mac", acik: "macOS" }, { id: "ios", ad: "iOS", link: "https://habehabe.ai/download/ios", acik: "iPhone" }, { id: "android", ad: "Android", link: "https://habehabe.ai/download/android", acik: "Android" }];
   const seciliIndirme = INDIRMELER.find((x) => x.id === indirme);
+  const kilitAcik = layaKarar === "HIZLI_GECTI" && kullaniciOnay;
   return (
-    <div style={{ maxWidth: "70ch", margin: "0 auto", padding: "0 24px", minHeight: "100vh", backgroundImage: "url(/sol.png)", backgroundRepeat: "no-repeat", backgroundPosition: "left center", backgroundSize: "280px 100%", width: "100%", background: "transparent", display: "flex", flexDirection: "column", background: bg, color: yazi }}>
+    <div style={{ minHeight: "100vh", width: "100%", display: "flex", background: "#0d1410", color: yazi }}>
+      <aside style={{ width: 240, flexShrink: 0, background: "#0c130f", borderRight: "1px solid #2d3d35", padding: "24px 16px", boxSizing: "border-box" }}>
+        <div style={{ fontSize: 13, fontWeight: 800, color: "#ff6600", marginBottom: 16 }}>Ajanlar</div>
+        {AJANLAR.map((ajan) => {
+          const secili = aktifAjan === ajan.id;
+          return (
+            <button
+              key={ajan.id}
+              type="button"
+              onClick={() => setAktifAjan(ajan.id)}
+              style={{
+                display: "block",
+                width: "100%",
+                textAlign: "left",
+                marginBottom: 8,
+                padding: "10px 12px",
+                borderRadius: 8,
+                background: secili ? "#131e17" : "#0f1612",
+                border: secili ? "1px solid #ff6600" : "1px solid #223028",
+                cursor: "pointer",
+                color: secili ? "#ff6600" : "#c5d1cf"
+              }}
+            >
+              <div style={{ fontWeight: 700, fontSize: 14 }}>{ajan.ad}</div>
+              <div style={{ fontSize: 12, color: "#6b7975", marginTop: 2 }}>{ajan.rol}</div>
+            </button>
+          );
+        })}
+      </aside>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <main style={{ maxWidth: "70ch", margin: "0 auto", padding: "0 24px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 32, marginBottom: 24 }}>
         <button onClick={() => setAyarAcik(true)} style={{ background: "none", border: "none", color: yazi, cursor: "pointer", fontSize: 13, padding: 0 }}>{T.ayar}</button>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -247,6 +286,18 @@ export default function App() {
           <span style={{ fontWeight: 800, fontSize: 20, color: "#ff6600", lineHeight: 1 }}>Habehabe AI</span>
         </div>
       </header>
+      <div style={{ background: "#121b16", border: "1px solid #2d3d35", borderRadius: 12, padding: 14, marginBottom: 16 }}>
+        <div style={{ fontSize: 14, fontWeight: 800, color: "#ff6600", marginBottom: 10 }}>Onay Kartı</div>
+        <div style={{ fontSize: 13, color: "#c5d1cf", marginBottom: 4 }}>src/App.jsx {kilitAcik ? "açık" : "kilitli"}</div>
+        <div style={{ fontSize: 13, color: "#c5d1cf", marginBottom: 8 }}>src/index.css {kilitAcik ? "açık" : "kilitli"}</div>
+        <div style={{ fontSize: 12, color: "#6b7975", marginBottom: 4 }}>Laya: {layaKarar}</div>
+        <div style={{ fontSize: 12, color: "#6b7975", marginBottom: 8 }}>Sen: {kullaniciOnay ? "onaylandı" : "onay yok"}</div>
+        <div style={{ fontSize: 12, color: "#ff6600", marginBottom: 12 }}>{kilitAcik ? "kilit açık" : kullaniciOnay ? "kilitli, Laya HIZLI_GECTI demedi" : "kilitli"}</div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button type="button" onClick={() => setKullaniciOnay(true)} style={{ padding: "8px 14px", borderRadius: 6, background: "#ff6600", color: "#000", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Allow</button>
+          <button type="button" onClick={() => setKullaniciOnay(false)} style={{ padding: "8px 14px", borderRadius: 6, background: "#1a2420", color: "#c5d1cf", border: "1px solid #2d3d35", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Deny</button>
+        </div>
+      </div>
       <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
   <span style={{ fontSize: 12, color: dim }}>Model:</span>
   <select value={aktifProvider} onChange={(e) => setAktifProvider(e.target.value)} style={{ flex: 1, padding: "8px 10px", borderRadius: 8, background: kart, color: yazi, border: "1px solid " + sinir, fontFamily: "monospace", cursor: "pointer", outline: "none" }}>
@@ -629,6 +680,8 @@ export default function App() {
           </div>
         </div>
       )}
+        </main>
+      </div>
     </div>
   );
 }
